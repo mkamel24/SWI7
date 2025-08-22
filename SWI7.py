@@ -30,7 +30,6 @@ st.set_page_config(
     layout="wide",
 )
 
-# Small CSS for cards & big number
 st.markdown(
     """
     <style>
@@ -64,24 +63,37 @@ LABELS = {
     'X8': "Qw/KH²  (Relative well abstraction rate)",
 }
 
-# Sensible slider ranges (tune to your domain bounds)
+# Dataset-based bounds (min, max, median defaults)
 FEATURE_RANGES = {
-    'X1': (0.98, 1.05, 1.02),
-    'X2': (0.00, 0.50, 0.10),
-    'X3': (0.00, 0.50, 0.08),
-    'X4': (0.00, 1.00, 0.30),
-    'X5': (0.00, 2.00, 1.00),
-    'X6': (0.00, 1.00, 0.40),
-    'X7': (0.00, 2.50, 1.50),
-    'X8': (0.00, 0.50, 0.05),
+    'X1': (0.970873786, 0.978473581, 0.975609756),
+    'X2': (0.10,       0.50,        0.10),
+    'X3': (0.002,      0.010,       0.010),
+    'X4': (0.40,       0.80,        0.60),
+    'X5': (0.30,       2.50,        0.50),
+    'X6': (0.10,       0.80,        0.30),
+    'X7': (0.12,       19.88,       0.50),
+    'X8': (8.92857e-07, 5e-04,      3e-04),
 }
 
+# Per-feature slider resolution/format
+SLIDER_SPEC = {
+    'X1': dict(step=1e-5,  fmt="%.6f"),
+    'X2': dict(step=1e-3,  fmt="%.3f"),
+    'X3': dict(step=1e-4,  fmt="%.4f"),
+    'X4': dict(step=1e-2,  fmt="%.2f"),
+    'X5': dict(step=1e-2,  fmt="%.2f"),
+    'X6': dict(step=1e-2,  fmt="%.2f"),
+    'X7': dict(step=1e-2,  fmt="%.2f"),
+    'X8': dict(step=1e-7,  fmt="%.7f"),
+}
+
+# Presets (clipped to bounds)
 PRESETS = {
     "— choose a preset —": None,
-    "Baseline":          [1.02, 0.10, 0.08, 0.30, 1.00, 0.40, 1.50, 0.05],
-    "High Abstraction":  [1.02, 0.10, 0.08, 0.30, 1.00, 0.40, 1.50, 0.20],
-    "Low Density Diff.": [1.00, 0.10, 0.08, 0.30, 1.00, 0.40, 1.50, 0.05],
-    "Near Dam":          [1.02, 0.10, 0.08, 0.60, 0.20, 0.40, 0.50, 0.10],
+    "Baseline":          [0.975609756, 0.10, 0.010, 0.60, 0.50, 0.30, 0.50, 0.0003],
+    "High Abstraction":  [0.9750,      0.10, 0.010, 0.60, 0.50, 0.30, 0.50, 0.0005],
+    "Near Dam":          [0.9755,      0.10, 0.010, 0.80, 0.30, 0.30, 0.12, 0.0003],
+    "Far Well":          [0.9755,      0.10, 0.010, 0.60, 0.50, 0.30, 10.00, 0.0003],
 }
 
 # ------------------------------
@@ -122,12 +134,13 @@ def json_download_bytes(obj):
     buf.seek(0)
     return buf
 
-def sample_background_df(ranges: dict, n: int = 256) -> pd.DataFrame:
+def sample_background_df(ranges: dict, n: int = 256, seed: int | None = None) -> pd.DataFrame:
     """Uniformly sample within slider ranges for background SHAP."""
+    rng = np.random.default_rng(None if seed is None else int(seed))
     data = {}
     for k in FEATURE_KEYS:
-        lo, hi, default = ranges[k]
-        data[k] = np.random.uniform(lo, hi, size=n)
+        lo, hi, _ = ranges[k]
+        data[k] = rng.uniform(lo, hi, size=n)
     return pd.DataFrame(data).astype(np.float32)
 
 def find_local_image() -> Image.Image | None:
@@ -142,6 +155,13 @@ def find_local_image() -> Image.Image | None:
 def ranges_key_tuple() -> tuple:
     """Hashable key for caching background SHAP when ranges change."""
     return tuple((k, tuple(map(float, FEATURE_RANGES[k]))) for k in FEATURE_KEYS)
+
+def clip_to_bounds(vals: list[float]) -> list[float]:
+    out = []
+    for v, k in zip(vals, FEATURE_KEYS):
+        lo, hi, _ = FEATURE_RANGES[k]
+        out.append(min(max(float(v), lo), hi))
+    return out
 
 # ------------------------------
 # Caching (no unhashable params!)
@@ -158,17 +178,31 @@ def get_explainer():
     return shap.Explainer(model)
 
 @st.cache_data(show_spinner=False)
-def shap_background_values(n: int = 256, rk: tuple | None = None):
-    """
-    Cached global SHAP on synthetic background.
-    Args are hashable: n (int) and rk (tuple produced by ranges_key_tuple()).
-    """
+def shap_background_values_uniform(n: int, rk: tuple, seed: int | None):
+    """Cached global SHAP on synthetic (uniform) background."""
     model, expected = load_model_and_expected()
     explainer = get_explainer()
-    df_bg = sample_background_df(FEATURE_RANGES, n)
+    df_bg = sample_background_df(FEATURE_RANGES, n, seed)
     # Align to model's column order
     X_bg = _ordered_df({k: 0.0 for k in FEATURE_KEYS}, expected)
     X_bg = df_bg[X_bg.columns]
+    sv = explainer(X_bg)
+    return sv, X_bg
+
+@st.cache_data(show_spinner=False)
+def shap_background_values_dataset(file_bytes: bytes, n: int, seed: int | None):
+    """Cached global SHAP on dataset background (uploaded CSV)."""
+    model, expected = load_model_and_expected()
+    explainer = get_explainer()
+    df = pd.read_csv(BytesIO(file_bytes))
+    if not set(FEATURE_KEYS).issubset(df.columns):
+        missing = [c for c in FEATURE_KEYS if c not in df.columns]
+        raise ValueError(f"Dataset missing columns: {missing}")
+    # Align & sample
+    ordered_cols = _ordered_df({k: 0.0 for k in FEATURE_KEYS}, expected).columns
+    if len(df) > n:
+        df = df.sample(n=n, random_state=None if seed is None else int(seed))
+    X_bg = df[ordered_cols].astype(np.float32)
     sv = explainer(X_bg)
     return sv, X_bg
 
@@ -195,6 +229,8 @@ if "current_inputs" not in st.session_state:
     st.session_state.current_inputs = {k: FEATURE_RANGES[k][2] for k in FEATURE_KEYS}
 if "sketch_bytes" not in st.session_state:
     st.session_state.sketch_bytes = None
+if "bg_file_bytes" not in st.session_state:
+    st.session_state.bg_file_bytes = None
 
 # ------------------------------
 # Header
@@ -224,19 +260,24 @@ with tab_predict:
         )
 
         st.markdown("#### Input Parameters (Dimensionless)")
+
         # Preset
         preset = st.selectbox("Preset", PRESETS.keys(), index=0)
         if PRESETS.get(preset):
-            vals = PRESETS[preset]
+            vals = clip_to_bounds(PRESETS[preset])
             st.session_state.current_inputs = {k: float(v) for k, v in zip(FEATURE_KEYS, vals)}
 
-        # Sliders
+        # Sliders (dataset bounds + custom resolution)
         for k in FEATURE_KEYS:
             lo, hi, df = FEATURE_RANGES[k]
+            spec = SLIDER_SPEC[k]
             st.session_state.current_inputs[k] = st.slider(
-                LABELS[k], min_value=float(lo), max_value=float(hi),
+                LABELS[k],
+                min_value=float(lo),
+                max_value=float(hi),
                 value=float(st.session_state.current_inputs.get(k, df)),
-                step=0.001, format="%.6f"
+                step=float(spec["step"]),
+                format=spec["fmt"],
             )
 
         # Bottom row buttons
@@ -306,49 +347,78 @@ with tab_predict:
         if img is None:
             st.info("No image found. Add one at `assets/sketch22.png` in the repo or upload above.")
         else:
-            st.image(img, use_container_width=True)  # <- correct param
+            st.image(img, use_container_width=True)
 
 # ==============================
 # EXPLAIN TAB (SHAP)
 # ==============================
 with tab_explain:
     st.markdown("### Explain (SHAP)")
+
+    # Background source toggle + controls
+    bg_src = st.radio("Background source for global SHAP:",
+                      ["Uniform (use slider bounds)", "Dataset (upload CSV)"],
+                      horizontal=True)
+    n_bg = st.slider("Background sample size", 100, 2000, 256, 50,
+                     help="Larger = smoother but slower. 256–512 is good for 8 features.")
+    seed = st.number_input("Random seed (optional)", min_value=0, max_value=10_000, value=42, step=1)
+
     try:
-        # Global SHAP
-        with st.expander("Global importance (summary on synthetic background)", expanded=True):
-            n_bg = st.slider("Background sample size", 100, 2000, 256, 50,
-                             help="Computed by sampling uniformly within slider ranges.")
-            sv_bg, X_bg = shap_background_values(n=n_bg, rk=ranges_key_tuple())
+        if bg_src.startswith("Uniform"):
+            sv_bg, X_bg = shap_background_values_uniform(n=n_bg, rk=ranges_key_tuple(), seed=int(seed))
+        else:
+            up_bg = st.file_uploader("Upload CSV for SHAP background", type=["csv"], key="bg_csv")
+            if up_bg is None:
+                st.info("Upload a CSV with columns X1..X8 to compute dataset-based SHAP.")
+                st.stop()
+            st.session_state.bg_file_bytes = up_bg.read()
+            sv_bg, X_bg = shap_background_values_dataset(st.session_state.bg_file_bytes, n=n_bg, seed=int(seed))
 
-            colA, colB = st.columns(2)
-            with colA:
-                st.write("**Mean absolute SHAP (bar)**")
-                fig = plt.figure(figsize=(7, 4))
-                shap.summary_plot(sv_bg.values, X_bg, plot_type="bar", show=False)
-                st.pyplot(fig, clear_figure=True, bbox_inches="tight")
-            with colB:
-                st.write("**Beeswarm (distribution of impacts)**")
-                fig = plt.figure(figsize=(7, 4))
-                shap.summary_plot(sv_bg.values, X_bg, show=False)
-                st.pyplot(fig, clear_figure=True, bbox_inches="tight")
-
-            # Top features for dependence
-            mean_abs = np.mean(np.abs(sv_bg.values), axis=0)
-            ordered_cols = list(X_bg.columns)
-            order_idx = np.argsort(-mean_abs)
-            top_feats = [ordered_cols[i] for i in order_idx[:5]]
-
-            st.write("**Dependence plots**")
-            dep1 = st.selectbox("Primary feature", top_feats, index=0)
-            dep2_options = ["(auto color)"] + [c for c in ordered_cols if c != dep1]
-            dep2 = st.selectbox("Color by (optional)", dep2_options, index=0)
-
+        # Global: bar + beeswarm
+        colA, colB = st.columns(2)
+        with colA:
+            st.write("**Mean absolute SHAP (bar)**")
             fig = plt.figure(figsize=(7, 4))
-            if dep2 == "(auto color)":
-                shap.dependence_plot(dep1, sv_bg.values, X_bg, show=False)
-            else:
-                shap.dependence_plot(dep1, sv_bg.values, X_bg, interaction_index=dep2, show=False)
+            shap.summary_plot(sv_bg.values, X_bg, plot_type="bar", show=False)
             st.pyplot(fig, clear_figure=True, bbox_inches="tight")
+        with colB:
+            st.write("**Beeswarm (distribution of impacts)**")
+            fig = plt.figure(figsize=(7, 4))
+            shap.summary_plot(sv_bg.values, X_bg, show=False)
+            st.pyplot(fig, clear_figure=True, bbox_inches="tight")
+
+        # Dependence plots (robust rendering)
+        mean_abs = np.mean(np.abs(sv_bg.values), axis=0)
+        ordered_cols = list(X_bg.columns)
+        order_idx = np.argsort(-mean_abs)
+        top_feats = [ordered_cols[i] for i in order_idx[:5]]
+
+        st.write("**Dependence plots**")
+        dep1 = st.selectbox("Primary feature", top_feats, index=0, key="dep1")
+        dep2_options = ["(auto color)"] + [c for c in ordered_cols if c != dep1]
+        dep2 = st.selectbox("Color by (optional)", dep2_options, index=0, key="dep2")
+        interaction = dep2 if dep2 != "(auto color)" else "auto"
+
+        try:
+            fig, ax = plt.subplots(figsize=(7, 4))
+            shap.dependence_plot(
+                dep1,
+                sv_bg.values,    # (n_samples, n_features)
+                X_bg,            # DataFrame with matching columns
+                interaction_index=interaction,
+                show=False,
+                ax=ax
+            )
+            st.pyplot(fig, clear_figure=True, bbox_inches="tight")
+            plt.close(fig)
+        except Exception:
+            fig, ax = plt.subplots(figsize=(7, 4))
+            if dep2 == "(auto color)":
+                shap.plots.scatter(sv_bg[:, dep1], ax=ax, show=False)
+            else:
+                shap.plots.scatter(sv_bg[:, dep1], color=sv_bg[:, dep2], ax=ax, show=False)
+            st.pyplot(fig, clear_figure=True, bbox_inches="tight")
+            plt.close(fig)
 
         # Local SHAP for current inputs
         with st.expander("Local explanation for current inputs", expanded=True):
@@ -367,7 +437,6 @@ with tab_explain:
                     shap.plots.waterfall(sv_one[0], max_display=8, show=False)
                     st.pyplot(fig, clear_figure=True, bbox_inches="tight")
                 except Exception:
-                    # Fallback: local bar if waterfall not available
                     fig = plt.figure(figsize=(7, 4))
                     shap.plots.bar(sv_one[0], show=False, max_display=8)
                     st.pyplot(fig, clear_figure=True, bbox_inches="tight")
@@ -392,7 +461,6 @@ with tab_batch:
                 missing = [c for c in FEATURE_KEYS if c not in df.columns]
                 st.error(f"CSV missing columns: {missing}")
             else:
-                # align order to model
                 ordered_cols = _ordered_df({k: 0.0 for k in FEATURE_KEYS}, expected).columns
                 X = df[ordered_cols].astype(np.float32)
                 try:
