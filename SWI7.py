@@ -273,7 +273,7 @@ with tab_predict:
         if img is None:
             st.info("Image not found. Place it at `assets/sketch22.png` in the repo.")
         else:
-            st.image(img, use_column_width=True)
+            st.image(img, use_container_width=True)
 
 # ==============================
 # EXPLAIN TAB (SHAP)
@@ -450,3 +450,4 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
