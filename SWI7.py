@@ -30,117 +30,165 @@ st.set_page_config(
     layout="wide",
 )
 
-st.markdown(
-    """
-    <style>
-      .block-container {padding-top: 1rem; padding-bottom: 2rem;}
-      .big-number {font-size: 44px; font-weight: 800; margin: 0.2rem 0 0.8rem 0;}
-      .card {padding: 1rem 1.25rem; border-radius: 10px; border: 1px solid var(--secondary-bg); background: var(--background-color);}
-      .muted {color: #8aa0b2; font-size: 0.95rem;}
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+# Add theme toggle in sidebar
+theme_choice = st.sidebar.radio("Theme", ["System", "Light", "Dark"], index=0)
 
-# ------------------------------
-# Adaptive Light/Dark Theme
-# ------------------------------
-st.markdown(
-    """
-    <style>
-        /* General app background adapts to Streamlit theme */
-        .stApp {
-            background-color: var(--background-color);
-            color: var(--text-color);
-            font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-        }
+# Base styles (System default → use Streamlit theme variables)
+base_css = """
+<style>
+    /* Main App */
+    .stApp {
+        background-color: var(--background-color);
+        color: var(--text-color);
+        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+    }
 
-        /* Cards with adaptive shadows */
-        .card {
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            border: 1px solid var(--secondary-background-color);
-            background-color: var(--background-color);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.2s ease-in-out;
-        }
-        .card:hover {
-            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-        }
+    /* General container padding */
+    .block-container {
+        padding-top: 1rem;
+        padding-bottom: 2rem;
+    }
 
-        /* Big numbers adapt to accent color */
-        .big-number {
-            font-size: 44px;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin: 0.2rem 0 0.8rem 0;
-        }
+    /* Cards */
+    .card {
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        border: 1px solid var(--secondary-background-color);
+        background-color: var(--background-color);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.2s ease-in-out;
+    }
+    .card:hover {
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    }
 
-        /* Buttons: use Streamlit theme variables */
-        button[kind="primary"] {
-            background-color: var(--primary-color) !important;
-            color: var(--primary-text-color) !important;
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            transition: all 0.2s ease-in-out;
-            border: none;
-        }
-        button[kind="primary"]:hover {
-            filter: brightness(0.9);
-        }
+    /* Big numbers */
+    .big-number {
+        font-size: 44px;
+        font-weight: 800;
+        color: var(--primary-color);
+        margin: 0.2rem 0 0.8rem 0;
+    }
 
-        /* Secondary buttons */
-        button[kind="secondary"] {
-            background-color: var(--secondary-background-color) !important;
-            color: var(--text-color) !important;
-            border-radius: 6px;
-            border: 1px solid var(--secondary-background-color);
-            transition: all 0.2s ease-in-out;
-        }
-        button[kind="secondary"]:hover {
-            filter: brightness(1.1);
-        }
+    /* Buttons */
+    button[kind="primary"] {
+        background-color: var(--primary-color) !important;
+        color: var(--primary-text-color) !important;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease-in-out;
+        border: none;
+    }
+    button[kind="primary"]:hover {
+        filter: brightness(0.9);
+    }
+    button[kind="secondary"] {
+        background-color: var(--secondary-background-color) !important;
+        color: var(--text-color) !important;
+        border-radius: 6px;
+        border: 1px solid var(--secondary-background-color);
+        transition: all 0.2s ease-in-out;
+    }
+    button[kind="secondary"]:hover {
+        filter: brightness(1.1);
+    }
 
-        /* Tabs adapt automatically */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 10px;
-        }
-        .stTabs [data-baseweb="tab"] {
-            background-color: var(--secondary-background-color);
-            color: var(--text-color);
-            border-radius: 6px;
-            padding: 0.5rem 1rem;
-            font-weight: 600;
-            transition: all 0.2s ease-in-out;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: var(--primary-color) !important;
-            color: var(--primary-text-color) !important;
-            border-color: var(--primary-color);
-        }
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        background-color: var(--secondary-background-color);
+        color: var(--text-color);
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: var(--primary-color) !important;
+        color: var(--primary-text-color) !important;
+        border-color: var(--primary-color);
+    }
 
-        /* Tables and DataFrames */
-        .stDataFrame {
-            background-color: var(--background-color);
-            border-radius: 6px;
-            padding: 0.5rem;
-            border: 1px solid var(--secondary-background-color);
-        }
+    /* Tables */
+    .stDataFrame {
+        background-color: var(--background-color);
+        border-radius: 6px;
+        padding: 0.5rem;
+        border: 1px solid var(--secondary-background-color);
+    }
 
-        /* Sliders adopt Streamlit theme */
-        .stSlider [role="slider"] {
-            background-color: var(--primary-color) !important;
-        }
+    /* Sliders */
+    .stSlider [role="slider"] {
+        background-color: var(--primary-color) !important;
+    }
 
-        /* Muted text automatically adapts */
-        .muted {
-            color: var(--secondary-text-color);
-            font-size: 0.95rem;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+    /* Muted text */
+    .muted {
+        color: var(--secondary-text-color);
+        font-size: 0.95rem;
+    }
+</style>
+"""
+
+# Light override
+light_css = """
+<style>
+    .stApp {
+        background-color: #f7f9fc;
+        color: #1e293b;
+    }
+    .card {
+        background-color: #ffffffcc;
+        border: 1px solid #e5e7eb;
+    }
+    .big-number {
+        color: #2563eb;
+    }
+    button[kind="primary"] {
+        background-color: #2563eb !important;
+        color: white !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2563eb !important;
+        color: white !important;
+    }
+</style>
+"""
+
+# Dark override
+dark_css = """
+<style>
+    .stApp {
+        background-color: #111827;
+        color: #f9fafb;
+    }
+    .card {
+        background-color: #1f2937;
+        border: 1px solid #374151;
+    }
+    .big-number {
+        color: #60a5fa;
+    }
+    button[kind="primary"] {
+        background-color: #2563eb !important;
+        color: #f9fafb !important;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2563eb !important;
+        color: white !important;
+    }
+</style>
+"""
+
+# Apply CSS based on toggle
+st.markdown(base_css, unsafe_allow_html=True)
+if theme_choice == "Light":
+    st.markdown(light_css, unsafe_allow_html=True)
+elif theme_choice == "Dark":
+    st.markdown(dark_css, unsafe_allow_html=True)
+
 
 
 # ------------------------------
@@ -649,6 +697,7 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
 
