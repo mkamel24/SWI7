@@ -30,176 +30,91 @@ st.set_page_config(
     layout="wide",
 )
 
+# Clean, readable, formal typography & light theme with strong contrast
+st.markdown(
+    """
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Source+Serif+4:wght@500;700&display=swap');
 
-# Top Theme Switcher (Full, Fixed Colors)
-# ==============================
-import streamlit as st
+      :root{
+        --ui-bg: #f7f9fc;
+        --ui-card: #ffffff;
+        --ui-border: #d1d5db;
+        --ui-text: #1e293b;
+        --ui-text-muted: #64748b;
+        --ui-accent: #2563eb;
+      }
 
-def _inject_css(css: str):
-    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+      .stApp { background: var(--ui-bg); color: var(--ui-text); }
+      .block-container {padding-top: 1rem; padding-bottom: 2rem;}
+      body, .stApp, p, div, span, label, input, select, textarea {
+        font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        color: var(--ui-text);
+        font-size: 16px;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+        color: var(--ui-text);
+        font-weight: 700;
+        letter-spacing: .2px;
+      }
 
-# Persist choice
-if "ui_theme" not in st.session_state:
-    st.session_state.ui_theme = "Light"  # default
+      .card {
+        padding: 1rem 1.25rem; border-radius: 12px;
+        border: 1px solid var(--ui-border); background: var(--ui-card);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      }
+      .big-number {font-size: 44px; font-weight: 800; color: var(--ui-accent); margin: .2rem 0 .8rem;}
 
-# ---- Top bar with two buttons (Light=Blue, Dark=Red)
-topbar = st.container()
-with topbar:
-    c_gap, c_light, c_dark = st.columns([7, 1.6, 1.6])
-    with c_light:
-        if st.button("☀️ Light (Blue)", use_container_width=True):
-            st.session_state.ui_theme = "Light"
-    with c_dark:
-        if st.button("🌙 Dark (Red)", use_container_width=True):
-            st.session_state.ui_theme = "Dark"
+      /* Inputs */
+      input, textarea, select {
+        background: var(--ui-card) !important; color: var(--ui-text) !important;
+        border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
+      }
+      .stNumberInput input {
+        background: var(--ui-card) !important; color: var(--ui-text) !important;
+        border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
+      }
+      .stSelectbox div[role="combobox"]{
+        background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 10px;
+      }
 
-# ---------- Base CSS (structure + variables hookup)
-BASE_CSS = """
-:root {
-  --ui-bg: var(--background-color, #ffffff);
-  --ui-bg-muted: rgba(0,0,0,0.035);
-  --ui-card: var(--background-color, #ffffff);
-  --ui-border: var(--secondary-background-color, #e5e7eb);
-  --ui-text: var(--text-color, #111827);
-  --ui-text-muted: var(--secondary-text-color, #6b7280);
-  --ui-primary: #2563eb;      /* will be overridden by theme */
-  --ui-primary-contrast: #ffffff;
-  --ui-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  --ui-shadow-hover: 0 4px 14px rgba(0,0,0,0.12);
-}
+      /* Buttons */
+      .stButton > button[kind="primary"]{
+        background: var(--ui-accent) !important; color: #ffffff !important;
+        border: none; border-radius: 10px; padding: .6rem 1rem; font-weight: 800;
+      }
+      .stButton > button[kind="secondary"]{
+        background: #eef2f7 !important; color: var(--ui-text) !important;
+        border: 1px solid var(--ui-border); border-radius: 10px; padding: .55rem 1rem; font-weight: 700;
+      }
 
-/* Canvas + basics */
-.stApp { background: var(--ui-bg); color: var(--ui-text); }
-.block-container { padding-top: 0.75rem; padding-bottom: 2rem; }
-h1, h2, h3, h4, h5, h6 { color: var(--ui-text); }
+      /* Tabs */
+      .stTabs [data-baseweb="tab-list"]{ gap: 8px; }
+      .stTabs [data-baseweb="tab"]{
+        background: #eef2f7; color: var(--ui-text);
+        border: 1px solid var(--ui-border);
+        border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
+      }
+      .stTabs [aria-selected="true"]{
+        background: var(--ui-accent) !important; color: #ffffff !important; border-color: var(--ui-accent) !important;
+      }
 
-/* Cards */
-.card {
-  padding: 1rem 1.25rem;
-  border-radius: 12px;
-  border: 1px solid var(--ui-border);
-  background: var(--ui-card);
-  box-shadow: var(--ui-shadow);
-  transition: box-shadow .2s ease, transform .08s ease;
-}
-.card:hover { box-shadow: var(--ui-shadow-hover); }
+      /* Tables */
+      .stDataFrame { background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem; }
+      [data-testid="stDataFrame"] thead th { background: #eef2f7 !important; color: var(--ui-text); font-weight: 800; }
 
-/* Big figure */
-.big-number { font-size: 44px; font-weight: 800; color: var(--ui-primary); margin: .2rem 0 .8rem; }
+      /* Uploader */
+      [data-testid="stFileUploader"] section {
+        border: 1px dashed var(--ui-border); background: #eef2f7;
+        border-radius: 12px; padding: .8rem;
+      }
 
-/* Buttons (primary/secondary) */
-.stButton > button[kind="primary"]{
-  background: var(--ui-primary) !important;
-  color: var(--ui-primary-contrast) !important;
-  border: none; border-radius: 9px; padding: .6rem 1rem; font-weight: 800;
-  transition: filter .15s ease, transform .02s ease;
-}
-.stButton > button[kind="primary"]:hover { filter: brightness(.93); }
-.stButton > button[kind="primary"]:active { transform: translateY(1px); }
-
-.stButton > button[kind="secondary"]{
-  background: var(--ui-bg-muted) !important;
-  color: var(--ui-text) !important;
-  border: 1px solid var(--ui-border); border-radius: 9px; padding: .55rem 1rem; font-weight: 700;
-}
-.stButton > button[kind="secondary"]:hover { filter: brightness(1.06); }
-
-/* Tabs */
-.stTabs [data-baseweb="tab-list"]{ gap: 10px; }
-.stTabs [data-baseweb="tab"]{
-  background: var(--ui-bg-muted); color: var(--ui-text);
-  border: 1px solid var(--ui-border);
-  border-radius: 10px; padding: .45rem 1rem; font-weight: 800;
-}
-.stTabs [aria-selected="true"]{
-  background: var(--ui-primary) !important; color: var(--ui-primary-contrast) !important;
-  border-color: var(--ui-primary) !important;
-}
-
-/* Inputs (text/number/select/multiselect/textarea) */
-input, textarea,
-.stTextInput input, .stNumberInput input,
-.stSelectbox div[role="combobox"], .stMultiSelect div[role="combobox"]{
-  background: var(--ui-card) !important; color: var(--ui-text) !important;
-  border-radius: 10px !important; border: 1px solid var(--ui-border) !important;
-}
-.stTextInput input:focus, .stNumberInput input:focus,
-.stSelectbox div[role="combobox"]:focus, textarea:focus {
-  outline: 2px solid color-mix(in srgb, var(--ui-primary) 35%, transparent) !important;
-}
-
-/* Slider */
-.stSlider [role="slider"]{ background: var(--ui-primary) !important; }
-.stSlider [data-baseweb="slider"] div[role="presentation"]{
-  background: color-mix(in srgb, var(--ui-primary) 24%, transparent) !important;
-}
-
-/* Radios & checkboxes */
-input[type="radio"], input[type="checkbox"]{ accent-color: var(--ui-primary); }
-
-/* DataFrame/table */
-.stDataFrame {
-  background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem;
-}
-[data-testid="stDataFrame"] thead th {
-  background: var(--ui-bg-muted) !important; color: var(--ui-text); font-weight: 800;
-}
-
-/* File uploader */
-[data-testid="stFileUploader"] section {
-  border: 1px dashed var(--ui-border); background: var(--ui-bg-muted);
-  border-radius: 12px; padding: .8rem;
-}
-
-/* Expanders */
-.streamlit-expanderHeader{
-  background: var(--ui-bg-muted) !important; border: 1px solid var(--ui-border) !important;
-  border-radius: 10px; padding: .6rem .85rem !important; font-weight: 800 !important;
-}
-
-/* Progress bar */
-[data-testid="stProgressBar"] > div > div { background: var(--ui-primary); }
-
-/* Alerts */
-.stAlert { border-radius: 12px; }
-
-/* Code/captions */
-code, pre { background: var(--ui-bg-muted) !important; }
-.muted { color: var(--ui-text-muted); font-size: .95rem; }
-"""
-
-# ---------- Light Theme (Blue accents, fixed readable text)
-LIGHT_CSS = """
-:root {
-  --ui-bg: #f7f9fc;
-  --ui-bg-muted: #eef2f7;
-  --ui-card: #ffffff;
-  --ui-border: #d1d5db;
-  --ui-text: #1e293b;          /* dark text */
-  --ui-text-muted: #6b7280;    /* muted text */
-  --ui-primary: #2563eb;       /* BLUE */
-  --ui-primary-contrast: #ffffff;
-}
-"""
-
-# ---------- Dark Theme (Red accents)
-DARK_CSS = """
-:root {
-  --ui-bg: #0b1020;
-  --ui-bg-muted: #151b2e;
-  --ui-card: #101628;
-  --ui-border: #27314a;
-  --ui-text: #f9fafb;          /* light text */
-  --ui-text-muted: #9ca3af;
-  --ui-primary: #ef4444;       /* RED */
-  --ui-primary-contrast: #0b1020;
-}
-"""
-
-# Apply
-_inject_css(BASE_CSS)
-_inject_css(LIGHT_CSS if st.session_state.ui_theme == "Light" else DARK_CSS)
-
+      .muted {color: var(--ui-text-muted); font-size: 0.95rem;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ------------------------------
 # Config / constants
@@ -234,7 +149,7 @@ FEATURE_RANGES = {
     'X8': (8.92857e-07, 5e-04,      3e-04),
 }
 
-# Per-feature slider resolution/format
+# Per-feature numeric input resolution/format
 SLIDER_SPEC = {
     'X1': dict(step=1e-5,  fmt="%.6f"),
     'X2': dict(step=1e-3,  fmt="%.3f"),
@@ -394,7 +309,7 @@ if "bg_file_bytes" not in st.session_state:
 # ------------------------------
 # Header
 # ------------------------------
-st.title("Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion Using Numerical and Interpretable Machine Learning Models")
+st.title("Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion\n Using Numerical and Interpretable Machine Learning Models")
 st.caption("For users, technicians, and hydraulic engineers – quick, reliable, and explainable.")
 
 # Tabs
@@ -421,30 +336,37 @@ with tab_predict:
         st.markdown("#### Input Parameters (Dimensionless)")
 
         # Preset
-        preset = st.selectbox("Preset", PRESETS.keys(), index=0)
+        preset = st.selectbox("Preset", list(PRESETS.keys()), index=0)
         if PRESETS.get(preset):
             vals = clip_to_bounds(PRESETS[preset])
             st.session_state.current_inputs = {k: float(v) for k, v in zip(FEATURE_KEYS, vals)}
 
-        # Sliders (dataset bounds + custom resolution)
-        for k in FEATURE_KEYS:
-            lo, hi, df = FEATURE_RANGES[k]
-            spec = SLIDER_SPEC[k]
-            st.session_state.current_inputs[k] = st.slider(
-                LABELS[k],
-                min_value=float(lo),
-                max_value=float(hi),
-                value=float(st.session_state.current_inputs.get(k, df)),
-                step=float(spec["step"]),
-                format=spec["fmt"],
-            )
+        # Number inputs (4 per row)
+        ordered_keys = FEATURE_KEYS[:]
+        for i in range(0, len(ordered_keys), 4):
+            cols = st.columns(4)
+            for j, k in enumerate(ordered_keys[i:i+4]):
+                lo, hi, df = FEATURE_RANGES[k]
+                spec = SLIDER_SPEC[k]
+                default_val = float(st.session_state.current_inputs.get(k, df))
+                # Ensure default is within bounds
+                default_val = float(min(max(default_val, float(lo)), float(hi)))
+                with cols[j]:
+                    st.session_state.current_inputs[k] = st.number_input(
+                        LABELS[k],
+                        min_value=float(lo),
+                        max_value=float(hi),
+                        value=default_val,
+                        step=float(spec["step"]),
+                        format=spec["fmt"],
+                    )
 
         # Bottom row buttons
         c1, c2, c3, c4, c5 = st.columns([1,1,1,1,1])
         with c1:
             if st.button("Predict", use_container_width=True, type="primary"):
                 try:
-                    values = {k: float(st.session_state.current_inputs[k]) for k in FEATURE_KEYS}
+                    values = {k: float(st.session_state.current_inputs[k]) for k in FEATURE_RANGES.keys()}
                     y = predict_one(values)
                     st.session_state.current_pred = y
                     st.session_state.last_inputs = [values[k] for k in FEATURE_KEYS]
@@ -664,7 +586,8 @@ with tab_article:
     st.markdown(
         """
         <div style="font-size:28px; font-weight:800; line-height:1.25;">
-        Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion\n Using Numerical and Interpretable Machine Learning Models      
+        Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion<br>
+        Using Numerical and Interpretable Machine Learning Models
         </div>
         """,
         unsafe_allow_html=True,
@@ -687,13 +610,6 @@ with tab_article:
     )
     st.markdown(
         """
-        <div style="font-size:18px; margin-top:0.6rem;">
-        Emails: asaad.matter@f-eng.tanta.edu.eg; martina.zelenakova@tuke.sk; melshaarawy@horus.edu.eg
-        </div>
-        """, unsafe_allow_html=True,
-    )
-    st.markdown(
-        """
         <div style="font-size:18px; font-style:italic; margin-top:0.6rem;">
         Scientific Reports 15 (in press)
         </div>
@@ -707,12 +623,3 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
-
-
-
-
-
-
-
-
-
