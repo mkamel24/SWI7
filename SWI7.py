@@ -336,7 +336,7 @@ if "bg_file_bytes" not in st.session_state:
 # ------------------------------
 # Header
 # ------------------------------
-st.title("Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion\n Using Numerical and Interpretable Machine Learning Models")
+st.title("Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion Using Numerical and Interpretable Machine Learning Models")
 st.caption("For users, technicians, and hydraulic engineers – quick, reliable, and explainable.")
 
 # Tabs
@@ -649,6 +649,7 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
 
