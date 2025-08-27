@@ -235,7 +235,7 @@ if "bg_file_bytes" not in st.session_state:
 # ------------------------------
 # Header
 # ------------------------------
-st.title("Modeling Saltwater Intrusion with Interpretable ML")
+st.title("Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion\n Using Numerical and Interpretable Machine Learning Models")
 st.caption("For users, technicians, and stakeholders – quick, reliable, and explainable.")
 
 # Tabs
@@ -505,8 +505,8 @@ with tab_article:
     st.markdown(
         """
         <div style="font-size:28px; font-weight:800; line-height:1.25;">
-        Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on
-        Saltwater Intrusion Using Interpretable Machine Learning Models
+        Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion 
+        Using Numerical and Interpretable Machine Learning Models      
         </div>
         """,
         unsafe_allow_html=True,
@@ -544,8 +544,9 @@ with tab_article:
 
     citation = (
         "Armanuos, A.M., Zeleňáková, M., & Elshaarawy, M.K. "
-        "(in press). Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on "
-        "Saltwater Intrusion Using Interpretable Machine Learning Models. Scientific Reports, 15."
+        "(in press). Modeling the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion "
+        "Using Numerical and Interpretable Machine Learning Models. Scientific Reports, 15."
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
