@@ -43,24 +43,24 @@ st.markdown(
 )
 
 # ------------------------------
-# Custom Light Theme (Soft UI)
+# Adaptive Light/Dark Theme
 # ------------------------------
 st.markdown(
     """
     <style>
-        /* Main background */
+        /* General app background adapts to Streamlit theme */
         .stApp {
-            background-color: #f7f9fc;
-            color: #1e293b;
+            background-color: var(--background-color);
+            color: var(--text-color);
             font-family: "Segoe UI", "Helvetica Neue", sans-serif;
         }
 
-        /* Cards */
+        /* Cards with adaptive shadows */
         .card {
             padding: 1rem 1.25rem;
             border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            background-color: #ffffffcc;
+            border: 1px solid var(--secondary-background-color);
+            background-color: var(--background-color);
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             transition: all 0.2s ease-in-out;
         }
@@ -68,72 +68,80 @@ st.markdown(
             box-shadow: 0 4px 14px rgba(0,0,0,0.12);
         }
 
-        /* Big numbers */
+        /* Big numbers adapt to accent color */
         .big-number {
             font-size: 44px;
             font-weight: 800;
-            color: #2563eb;
+            color: var(--primary-color);
             margin: 0.2rem 0 0.8rem 0;
         }
 
-        /* Buttons */
+        /* Buttons: use Streamlit theme variables */
         button[kind="primary"] {
-            background-color: #2563eb !important;
-            color: white !important;
+            background-color: var(--primary-color) !important;
+            color: var(--primary-text-color) !important;
             border-radius: 6px;
             padding: 0.5rem 1rem;
-            transition: background-color 0.2s ease-in-out;
+            transition: all 0.2s ease-in-out;
+            border: none;
         }
         button[kind="primary"]:hover {
-            background-color: #1d4ed8 !important;
+            filter: brightness(0.9);
         }
 
-        /* Sliders */
-        .stSlider [role="slider"] {
-            background-color: #2563eb !important;
+        /* Secondary buttons */
+        button[kind="secondary"] {
+            background-color: var(--secondary-background-color) !important;
+            color: var(--text-color) !important;
+            border-radius: 6px;
+            border: 1px solid var(--secondary-background-color);
+            transition: all 0.2s ease-in-out;
+        }
+        button[kind="secondary"]:hover {
+            filter: brightness(1.1);
         }
 
-        /* Headers */
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 700;
-            color: #1e293b;
-        }
-
-        /* Tabs */
+        /* Tabs adapt automatically */
         .stTabs [data-baseweb="tab-list"] {
             gap: 10px;
         }
         .stTabs [data-baseweb="tab"] {
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb;
+            background-color: var(--secondary-background-color);
+            color: var(--text-color);
             border-radius: 6px;
             padding: 0.5rem 1rem;
             font-weight: 600;
             transition: all 0.2s ease-in-out;
         }
         .stTabs [aria-selected="true"] {
-            background-color: #2563eb !important;
-            color: white !important;
-            border-color: #2563eb;
+            background-color: var(--primary-color) !important;
+            color: var(--primary-text-color) !important;
+            border-color: var(--primary-color);
         }
 
-        /* Tables */
+        /* Tables and DataFrames */
         .stDataFrame {
-            background-color: white;
-            border: 1px solid #e5e7eb;
+            background-color: var(--background-color);
             border-radius: 6px;
             padding: 0.5rem;
+            border: 1px solid var(--secondary-background-color);
         }
 
-        /* Muted text */
+        /* Sliders adopt Streamlit theme */
+        .stSlider [role="slider"] {
+            background-color: var(--primary-color) !important;
+        }
+
+        /* Muted text automatically adapts */
         .muted {
-            color: #64748b;
+            color: var(--secondary-text-color);
             font-size: 0.95rem;
         }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # ------------------------------
 # Config / constants
@@ -641,6 +649,7 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
 
