@@ -43,6 +43,99 @@ st.markdown(
 )
 
 # ------------------------------
+# Custom Light Theme (Soft UI)
+# ------------------------------
+st.markdown(
+    """
+    <style>
+        /* Main background */
+        .stApp {
+            background-color: #f7f9fc;
+            color: #1e293b;
+            font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+        }
+
+        /* Cards */
+        .card {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background-color: #ffffffcc;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.2s ease-in-out;
+        }
+        .card:hover {
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        }
+
+        /* Big numbers */
+        .big-number {
+            font-size: 44px;
+            font-weight: 800;
+            color: #2563eb;
+            margin: 0.2rem 0 0.8rem 0;
+        }
+
+        /* Buttons */
+        button[kind="primary"] {
+            background-color: #2563eb !important;
+            color: white !important;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        button[kind="primary"]:hover {
+            background-color: #1d4ed8 !important;
+        }
+
+        /* Sliders */
+        .stSlider [role="slider"] {
+            background-color: #2563eb !important;
+        }
+
+        /* Headers */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Tabs */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 10px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: #2563eb !important;
+            color: white !important;
+            border-color: #2563eb;
+        }
+
+        /* Tables */
+        .stDataFrame {
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 0.5rem;
+        }
+
+        /* Muted text */
+        .muted {
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# ------------------------------
 # Config / constants
 # ------------------------------
 MODEL_PATH = "models/XGB.joblib"       # your model file
@@ -548,5 +641,6 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
