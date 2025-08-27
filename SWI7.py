@@ -31,18 +31,21 @@ st.set_page_config(
 )
 
 # Clean, readable, formal typography & light theme with strong contrast
+# ------------------------------
+# Dark Theme CSS
+# ------------------------------
 st.markdown(
     """
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Source+Serif+4:wght@500;700&display=swap');
 
       :root{
-        --ui-bg: #f7f9fc;
-        --ui-card: #ffffff;
-        --ui-border: #d1d5db;
-        --ui-text: #1e293b;
-        --ui-text-muted: #64748b;
-        --ui-accent: #2563eb;
+        --ui-bg: #0b1020;          /* main background */
+        --ui-card: #1a2235;        /* cards */
+        --ui-border: #2f3b52;      /* borders */
+        --ui-text: #f1f5f9;        /* main text */
+        --ui-text-muted: #94a3b8;  /* muted text */
+        --ui-accent: #3b82f6;      /* accent (blue) */
       }
 
       .stApp { background: var(--ui-bg); color: var(--ui-text); }
@@ -56,13 +59,12 @@ st.markdown(
         font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
         color: var(--ui-text);
         font-weight: 700;
-        letter-spacing: .2px;
       }
 
       .card {
         padding: 1rem 1.25rem; border-radius: 12px;
         border: 1px solid var(--ui-border); background: var(--ui-card);
-        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        box-shadow: 0 2px 8px rgba(0,0,0,.5);
       }
       .big-number {font-size: 44px; font-weight: 800; color: var(--ui-accent); margin: .2rem 0 .8rem;}
 
@@ -77,6 +79,7 @@ st.markdown(
       }
       .stSelectbox div[role="combobox"]{
         background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 10px;
+        color: var(--ui-text);
       }
 
       /* Buttons */
@@ -85,14 +88,14 @@ st.markdown(
         border: none; border-radius: 10px; padding: .6rem 1rem; font-weight: 800;
       }
       .stButton > button[kind="secondary"]{
-        background: #eef2f7 !important; color: var(--ui-text) !important;
+        background: #1e293b !important; color: var(--ui-text) !important;
         border: 1px solid var(--ui-border); border-radius: 10px; padding: .55rem 1rem; font-weight: 700;
       }
 
       /* Tabs */
       .stTabs [data-baseweb="tab-list"]{ gap: 8px; }
       .stTabs [data-baseweb="tab"]{
-        background: #eef2f7; color: var(--ui-text);
+        background: #1e293b; color: var(--ui-text);
         border: 1px solid var(--ui-border);
         border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
       }
@@ -102,12 +105,12 @@ st.markdown(
 
       /* Tables */
       .stDataFrame { background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem; }
-      [data-testid="stDataFrame"] thead th { background: #eef2f7 !important; color: var(--ui-text); font-weight: 800; }
+      [data-testid="stDataFrame"] thead th { background: #1e293b !important; color: var(--ui-text); font-weight: 800; }
 
       /* Uploader */
       [data-testid="stFileUploader"] section {
-        border: 1px dashed var(--ui-border); background: #eef2f7;
-        border-radius: 12px; padding: .8rem;
+        border: 1px dashed var(--ui-border); background: #1e293b;
+        border-radius: 12px; padding: .8rem; color: var(--ui-text);
       }
 
       .muted {color: var(--ui-text-muted); font-size: 0.95rem;}
@@ -115,6 +118,7 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
 
 # ------------------------------
 # Config / constants
@@ -623,3 +627,4 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
