@@ -30,164 +30,175 @@ st.set_page_config(
     layout="wide",
 )
 
-# Add theme toggle in sidebar
-theme_choice = st.sidebar.radio("Theme", ["System", "Light", "Dark"], index=0)
+# ==============================
+# Top Theme Switcher (Buttons)
+# ==============================
+import streamlit as st
 
-# Base styles (System default → use Streamlit theme variables)
-base_css = """
-<style>
-    /* Main App */
-    .stApp {
-        background-color: var(--background-color);
-        color: var(--text-color);
-        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
-    }
+def _inject_css(css: str):
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
-    /* General container padding */
-    .block-container {
-        padding-top: 1rem;
-        padding-bottom: 2rem;
-    }
+# Remember choice across interactions
+if "ui_theme" not in st.session_state:
+    st.session_state.ui_theme = "Light"
 
-    /* Cards */
-    .card {
-        padding: 1rem 1.25rem;
-        border-radius: 12px;
-        border: 1px solid var(--secondary-background-color);
-        background-color: var(--background-color);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        transition: all 0.2s ease-in-out;
-    }
-    .card:hover {
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-    }
+# Top row selector
+topbar = st.container()
+with topbar:
+    c_spacer, c_light, c_dark = st.columns([7, 1.5, 1.5])
+    with c_light:
+        if st.button("☀️ Light (Blue)", use_container_width=True):
+            st.session_state.ui_theme = "Light"
+    with c_dark:
+        if st.button("🌙 Dark (Red)", use_container_width=True):
+            st.session_state.ui_theme = "Dark"
 
-    /* Big numbers */
-    .big-number {
-        font-size: 44px;
-        font-weight: 800;
-        color: var(--primary-color);
-        margin: 0.2rem 0 0.8rem 0;
-    }
+# ---------- Base CSS (shared structure) ----------
+BASE_CSS = """
+:root {
+  --ui-bg: var(--background-color, #ffffff);
+  --ui-bg-muted: rgba(0,0,0,0.03);
+  --ui-card: var(--background-color, #ffffff);
+  --ui-border: var(--secondary-background-color, #e5e7eb);
+  --ui-text: var(--text-color, #111827);
+  --ui-text-muted: var(--secondary-text-color, #6b7280);
+  --ui-primary: #2563eb;   /* default (overridden by theme) */
+  --ui-primary-contrast: #ffffff;
+  --ui-accent: var(--ui-primary);
+  --ui-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --ui-shadow-hover: 0 4px 14px rgba(0,0,0,0.12);
+}
 
-    /* Buttons */
-    button[kind="primary"] {
-        background-color: var(--primary-color) !important;
-        color: var(--primary-text-color) !important;
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        transition: all 0.2s ease-in-out;
-        border: none;
-    }
-    button[kind="primary"]:hover {
-        filter: brightness(0.9);
-    }
-    button[kind="secondary"] {
-        background-color: var(--secondary-background-color) !important;
-        color: var(--text-color) !important;
-        border-radius: 6px;
-        border: 1px solid var(--secondary-background-color);
-        transition: all 0.2s ease-in-out;
-    }
-    button[kind="secondary"]:hover {
-        filter: brightness(1.1);
-    }
+/* App canvas */
+.stApp { background: var(--ui-bg); color: var(--ui-text); }
 
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-        background-color: var(--secondary-background-color);
-        color: var(--text-color);
-        border-radius: 6px;
-        padding: 0.5rem 1rem;
-        font-weight: 600;
-        transition: all 0.2s ease-in-out;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: var(--primary-color) !important;
-        color: var(--primary-text-color) !important;
-        border-color: var(--primary-color);
-    }
+/* Layout breathing room */
+.block-container { padding-top: 0.75rem; padding-bottom: 2rem; }
 
-    /* Tables */
-    .stDataFrame {
-        background-color: var(--background-color);
-        border-radius: 6px;
-        padding: 0.5rem;
-        border: 1px solid var(--secondary-background-color);
-    }
+/* Cards */
+.card {
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-card);
+  box-shadow: var(--ui-shadow);
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+.card:hover { box-shadow: var(--ui-shadow-hover); }
 
-    /* Sliders */
-    .stSlider [role="slider"] {
-        background-color: var(--primary-color) !important;
-    }
+/* Big figure readout */
+.big-number { font-size: 44px; font-weight: 800; color: var(--ui-primary); margin: .2rem 0 .8rem; }
 
-    /* Muted text */
-    .muted {
-        color: var(--secondary-text-color);
-        font-size: 0.95rem;
-    }
-</style>
+/* Primary & secondary buttons */
+.stButton > button[kind="primary"]{
+  background: var(--ui-primary) !important;
+  color: var(--ui-primary-contrast) !important;
+  border: none; border-radius: 8px; padding: .55rem 1rem; font-weight: 700;
+  transition: filter .15s ease, transform .02s ease;
+}
+.stButton > button[kind="primary"]:hover { filter: brightness(.92); }
+.stButton > button[kind="primary"]:active { transform: translateY(1px); }
+
+.stButton > button[kind="secondary"]{
+  background: var(--ui-bg-muted) !important;
+  color: var(--ui-text) !important;
+  border: 1px solid var(--ui-border); border-radius: 8px; padding: .55rem 1rem; font-weight: 600;
+}
+.stButton > button[kind="secondary"]:hover { filter: brightness(1.05); }
+
+/* Tabs */
+.stTabs [data-baseweb="tab-list"]{ gap: 10px; }
+.stTabs [data-baseweb="tab"]{
+  background: var(--ui-bg-muted); color: var(--ui-text);
+  border: 1px solid var(--ui-border);
+  border-radius: 8px; padding: .4rem .9rem; font-weight: 700;
+}
+.stTabs [aria-selected="true"]{
+  background: var(--ui-primary) !important; color: var(--ui-primary-contrast) !important;
+  border-color: var(--ui-primary) !important;
+}
+
+/* Inputs (text, number, select, multiselect) */
+input, textarea, .stTextInput input, .stNumberInput input, .stSelectbox div[role="combobox"], .stMultiSelect div[role="combobox"]{
+  background: var(--ui-card) !important; color: var(--ui-text) !important;
+  border-radius: 8px !important; border: 1px solid var(--ui-border) !important;
+}
+.stTextInput input:focus, .stNumberInput input:focus, .stSelectbox div[role="combobox"]:focus {
+  outline: 2px solid color-mix(in srgb, var(--ui-primary) 40%, transparent) !important;
+}
+
+/* Radio / Checkbox accent */
+input[type="radio"], input[type="checkbox"]{
+  accent-color: var(--ui-primary);
+}
+
+/* Sliders */
+.stSlider [role="slider"]{ background: var(--ui-primary) !important; }
+.stSlider .st-emotion-cache-16huue1, .stSlider .st-bq{ /* track fallback */
+  background: color-mix(in srgb, var(--ui-primary) 25%, transparent) !important;
+}
+
+/* DataFrames / tables */
+.stDataFrame {
+  background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 10px; padding: .25rem;
+}
+[data-testid="stDataFrame"] thead th { background: var(--ui-bg-muted) !important; color: var(--ui-text); }
+
+/* File uploader */
+[data-testid="stFileUploader"] section {
+  border: 1px dashed var(--ui-border); background: var(--ui-bg-muted);
+  border-radius: 10px; padding: .75rem;
+}
+
+/* Expanders */
+.streamlit-expanderHeader{
+  background: var(--ui-bg-muted); border: 1px solid var(--ui-border);
+  border-radius: 10px; padding: .6rem .8rem; font-weight: 700;
+}
+
+/* Progress bars */
+[data-testid="stProgressBar"] > div > div { background: var(--ui-primary); }
+
+/* Alerts keep semantic colors; tweak contrast a bit */
+.stAlert { border-radius: 10px; }
+
+/* Code blocks / captions */
+code, pre { background: var(--ui-bg-muted) !important; }
+.muted { color: var(--ui-text-muted); font-size: 0.95rem; }
 """
 
-# Light override
-light_css = """
-<style>
-    .stApp {
-        background-color: #f7f9fc;
-        color: #1e293b;
-    }
-    .card {
-        background-color: #ffffffcc;
-        border: 1px solid #e5e7eb;
-    }
-    .big-number {
-        color: #2563eb;
-    }
-    button[kind="primary"] {
-        background-color: #2563eb !important;
-        color: white !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #2563eb !important;
-        color: white !important;
-    }
-</style>
+# ---------- Light Theme (Blue) ----------
+LIGHT_CSS = """
+:root {
+  --ui-bg: #f7f9fc;
+  --ui-bg-muted: #eef2f7;
+  --ui-card: #ffffffcc;
+  --ui-border: #e5e7eb;
+  --ui-text: #0f172a;
+  --ui-text-muted: #64748b;
+  --ui-primary: #2563eb;        /* BLUE */
+  --ui-primary-contrast: #ffffff;
+}
 """
 
-# Dark override
-dark_css = """
-<style>
-    .stApp {
-        background-color: #111827;
-        color: #f9fafb;
-    }
-    .card {
-        background-color: #1f2937;
-        border: 1px solid #374151;
-    }
-    .big-number {
-        color: #60a5fa;
-    }
-    button[kind="primary"] {
-        background-color: #2563eb !important;
-        color: #f9fafb !important;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #2563eb !important;
-        color: white !important;
-    }
-</style>
+# ---------- Dark Theme (Red) ----------
+DARK_CSS = """
+:root {
+  --ui-bg: #0b1020;
+  --ui-bg-muted: #151b2e;
+  --ui-card: #101628;
+  --ui-border: #27314a;
+  --ui-text: #e5e7eb;
+  --ui-text-muted: #a5b4cb;
+  --ui-primary: #ef4444;        /* RED */
+  --ui-primary-contrast: #0b1020;
+}
 """
 
-# Apply CSS based on toggle
-st.markdown(base_css, unsafe_allow_html=True)
-if theme_choice == "Light":
-    st.markdown(light_css, unsafe_allow_html=True)
-elif theme_choice == "Dark":
-    st.markdown(dark_css, unsafe_allow_html=True)
+# Apply
+_inject_css(BASE_CSS)
+_inject_css(LIGHT_CSS if st.session_state.ui_theme == "Light" else DARK_CSS)
+
 
 
 
@@ -697,6 +708,7 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
 
