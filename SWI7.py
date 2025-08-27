@@ -167,33 +167,30 @@ code, pre { background: var(--ui-bg-muted) !important; }
 .muted { color: var(--ui-text-muted); font-size: 0.95rem; }
 """
 
-# ---------- Light Theme (Blue) ----------
-LIGHT_CSS = """
+/* ---------- Light Theme (Blue accents) ---------- */
 :root {
-  --ui-bg: #f7f9fc;
-  --ui-bg-muted: #eef2f7;
-  --ui-card: #ffffffcc;
-  --ui-border: #e5e7eb;
-  --ui-text: #0f172a;
-  --ui-text-muted: #64748b;
-  --ui-primary: #2563eb;        /* BLUE */
-  --ui-primary-contrast: #ffffff;
+  --ui-bg: #f7f9fc;          /* page background */
+  --ui-bg-muted: #eef2f7;    /* cards / muted blocks */
+  --ui-card: #ffffff;        /* card background */
+  --ui-border: #d1d5db;      /* light gray borders */
+  --ui-text: #1e293b;        /* dark gray text */
+  --ui-text-muted: #6b7280;  /* softer gray text */
+  --ui-primary: #2563eb;     /* BLUE accents */
+  --ui-primary-contrast: #ffffff; /* text on blue */
 }
-"""
 
-# ---------- Dark Theme (Red) ----------
-DARK_CSS = """
+/* ---------- Dark Theme (Red accents) ---------- */
 :root {
-  --ui-bg: #0b1020;
-  --ui-bg-muted: #151b2e;
-  --ui-card: #101628;
-  --ui-border: #27314a;
-  --ui-text: #e5e7eb;
-  --ui-text-muted: #a5b4cb;
-  --ui-primary: #ef4444;        /* RED */
-  --ui-primary-contrast: #0b1020;
+  --ui-bg: #0b1020;          /* deep navy background */
+  --ui-bg-muted: #151b2e;    /* slightly lighter navy */
+  --ui-card: #101628;        /* card background */
+  --ui-border: #27314a;      /* muted border */
+  --ui-text: #f9fafb;        /* light text */
+  --ui-text-muted: #9ca3af;  /* softer gray text */
+  --ui-primary: #ef4444;     /* RED accents */
+  --ui-primary-contrast: #0b1020; /* text on red */
 }
-"""
+
 
 # Apply
 _inject_css(BASE_CSS)
@@ -708,6 +705,7 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
 
