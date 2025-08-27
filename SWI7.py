@@ -30,22 +30,22 @@ st.set_page_config(
     layout="wide",
 )
 
-# ==============================
-# Top Theme Switcher (Buttons)
+
+# Top Theme Switcher (Full, Fixed Colors)
 # ==============================
 import streamlit as st
 
 def _inject_css(css: str):
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
-# Remember choice across interactions
+# Persist choice
 if "ui_theme" not in st.session_state:
-    st.session_state.ui_theme = "Light"
+    st.session_state.ui_theme = "Light"  # default
 
-# Top row selector
+# ---- Top bar with two buttons (Light=Blue, Dark=Red)
 topbar = st.container()
 with topbar:
-    c_spacer, c_light, c_dark = st.columns([7, 1.5, 1.5])
+    c_gap, c_light, c_dark = st.columns([7, 1.6, 1.6])
     with c_light:
         if st.button("☀️ Light (Blue)", use_container_width=True):
             st.session_state.ui_theme = "Light"
@@ -53,27 +53,25 @@ with topbar:
         if st.button("🌙 Dark (Red)", use_container_width=True):
             st.session_state.ui_theme = "Dark"
 
-# ---------- Base CSS (shared structure) ----------
+# ---------- Base CSS (structure + variables hookup)
 BASE_CSS = """
 :root {
   --ui-bg: var(--background-color, #ffffff);
-  --ui-bg-muted: rgba(0,0,0,0.03);
+  --ui-bg-muted: rgba(0,0,0,0.035);
   --ui-card: var(--background-color, #ffffff);
   --ui-border: var(--secondary-background-color, #e5e7eb);
   --ui-text: var(--text-color, #111827);
   --ui-text-muted: var(--secondary-text-color, #6b7280);
-  --ui-primary: #2563eb;   /* default (overridden by theme) */
+  --ui-primary: #2563eb;      /* will be overridden by theme */
   --ui-primary-contrast: #ffffff;
-  --ui-accent: var(--ui-primary);
   --ui-shadow: 0 2px 8px rgba(0,0,0,0.08);
   --ui-shadow-hover: 0 4px 14px rgba(0,0,0,0.12);
 }
 
-/* App canvas */
+/* Canvas + basics */
 .stApp { background: var(--ui-bg); color: var(--ui-text); }
-
-/* Layout breathing room */
 .block-container { padding-top: 0.75rem; padding-bottom: 2rem; }
+h1, h2, h3, h4, h5, h6 { color: var(--ui-text); }
 
 /* Cards */
 .card {
@@ -82,121 +80,125 @@ BASE_CSS = """
   border: 1px solid var(--ui-border);
   background: var(--ui-card);
   box-shadow: var(--ui-shadow);
-  transition: box-shadow .2s ease, transform .2s ease;
+  transition: box-shadow .2s ease, transform .08s ease;
 }
 .card:hover { box-shadow: var(--ui-shadow-hover); }
 
-/* Big figure readout */
+/* Big figure */
 .big-number { font-size: 44px; font-weight: 800; color: var(--ui-primary); margin: .2rem 0 .8rem; }
 
-/* Primary & secondary buttons */
+/* Buttons (primary/secondary) */
 .stButton > button[kind="primary"]{
   background: var(--ui-primary) !important;
   color: var(--ui-primary-contrast) !important;
-  border: none; border-radius: 8px; padding: .55rem 1rem; font-weight: 700;
+  border: none; border-radius: 9px; padding: .6rem 1rem; font-weight: 800;
   transition: filter .15s ease, transform .02s ease;
 }
-.stButton > button[kind="primary"]:hover { filter: brightness(.92); }
+.stButton > button[kind="primary"]:hover { filter: brightness(.93); }
 .stButton > button[kind="primary"]:active { transform: translateY(1px); }
 
 .stButton > button[kind="secondary"]{
   background: var(--ui-bg-muted) !important;
   color: var(--ui-text) !important;
-  border: 1px solid var(--ui-border); border-radius: 8px; padding: .55rem 1rem; font-weight: 600;
+  border: 1px solid var(--ui-border); border-radius: 9px; padding: .55rem 1rem; font-weight: 700;
 }
-.stButton > button[kind="secondary"]:hover { filter: brightness(1.05); }
+.stButton > button[kind="secondary"]:hover { filter: brightness(1.06); }
 
 /* Tabs */
 .stTabs [data-baseweb="tab-list"]{ gap: 10px; }
 .stTabs [data-baseweb="tab"]{
   background: var(--ui-bg-muted); color: var(--ui-text);
   border: 1px solid var(--ui-border);
-  border-radius: 8px; padding: .4rem .9rem; font-weight: 700;
+  border-radius: 10px; padding: .45rem 1rem; font-weight: 800;
 }
 .stTabs [aria-selected="true"]{
   background: var(--ui-primary) !important; color: var(--ui-primary-contrast) !important;
   border-color: var(--ui-primary) !important;
 }
 
-/* Inputs (text, number, select, multiselect) */
-input, textarea, .stTextInput input, .stNumberInput input, .stSelectbox div[role="combobox"], .stMultiSelect div[role="combobox"]{
+/* Inputs (text/number/select/multiselect/textarea) */
+input, textarea,
+.stTextInput input, .stNumberInput input,
+.stSelectbox div[role="combobox"], .stMultiSelect div[role="combobox"]{
   background: var(--ui-card) !important; color: var(--ui-text) !important;
-  border-radius: 8px !important; border: 1px solid var(--ui-border) !important;
+  border-radius: 10px !important; border: 1px solid var(--ui-border) !important;
 }
-.stTextInput input:focus, .stNumberInput input:focus, .stSelectbox div[role="combobox"]:focus {
-  outline: 2px solid color-mix(in srgb, var(--ui-primary) 40%, transparent) !important;
-}
-
-/* Radio / Checkbox accent */
-input[type="radio"], input[type="checkbox"]{
-  accent-color: var(--ui-primary);
+.stTextInput input:focus, .stNumberInput input:focus,
+.stSelectbox div[role="combobox"]:focus, textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--ui-primary) 35%, transparent) !important;
 }
 
-/* Sliders */
+/* Slider */
 .stSlider [role="slider"]{ background: var(--ui-primary) !important; }
-.stSlider .st-emotion-cache-16huue1, .stSlider .st-bq{ /* track fallback */
-  background: color-mix(in srgb, var(--ui-primary) 25%, transparent) !important;
+.stSlider [data-baseweb="slider"] div[role="presentation"]{
+  background: color-mix(in srgb, var(--ui-primary) 24%, transparent) !important;
 }
 
-/* DataFrames / tables */
+/* Radios & checkboxes */
+input[type="radio"], input[type="checkbox"]{ accent-color: var(--ui-primary); }
+
+/* DataFrame/table */
 .stDataFrame {
-  background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 10px; padding: .25rem;
+  background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem;
 }
-[data-testid="stDataFrame"] thead th { background: var(--ui-bg-muted) !important; color: var(--ui-text); }
+[data-testid="stDataFrame"] thead th {
+  background: var(--ui-bg-muted) !important; color: var(--ui-text); font-weight: 800;
+}
 
 /* File uploader */
 [data-testid="stFileUploader"] section {
   border: 1px dashed var(--ui-border); background: var(--ui-bg-muted);
-  border-radius: 10px; padding: .75rem;
+  border-radius: 12px; padding: .8rem;
 }
 
 /* Expanders */
 .streamlit-expanderHeader{
-  background: var(--ui-bg-muted); border: 1px solid var(--ui-border);
-  border-radius: 10px; padding: .6rem .8rem; font-weight: 700;
+  background: var(--ui-bg-muted) !important; border: 1px solid var(--ui-border) !important;
+  border-radius: 10px; padding: .6rem .85rem !important; font-weight: 800 !important;
 }
 
-/* Progress bars */
+/* Progress bar */
 [data-testid="stProgressBar"] > div > div { background: var(--ui-primary); }
 
-/* Alerts keep semantic colors; tweak contrast a bit */
-.stAlert { border-radius: 10px; }
+/* Alerts */
+.stAlert { border-radius: 12px; }
 
-/* Code blocks / captions */
+/* Code/captions */
 code, pre { background: var(--ui-bg-muted) !important; }
-.muted { color: var(--ui-text-muted); font-size: 0.95rem; }
+.muted { color: var(--ui-text-muted); font-size: .95rem; }
 """
 
-/* ---------- Light Theme (Blue accents) ---------- */
+# ---------- Light Theme (Blue accents, fixed readable text)
+LIGHT_CSS = """
 :root {
-  --ui-bg: #f7f9fc;          /* page background */
-  --ui-bg-muted: #eef2f7;    /* cards / muted blocks */
-  --ui-card: #ffffff;        /* card background */
-  --ui-border: #d1d5db;      /* light gray borders */
-  --ui-text: #1e293b;        /* dark gray text */
-  --ui-text-muted: #6b7280;  /* softer gray text */
-  --ui-primary: #2563eb;     /* BLUE accents */
-  --ui-primary-contrast: #ffffff; /* text on blue */
+  --ui-bg: #f7f9fc;
+  --ui-bg-muted: #eef2f7;
+  --ui-card: #ffffff;
+  --ui-border: #d1d5db;
+  --ui-text: #1e293b;          /* dark text */
+  --ui-text-muted: #6b7280;    /* muted text */
+  --ui-primary: #2563eb;       /* BLUE */
+  --ui-primary-contrast: #ffffff;
 }
+"""
 
-/* ---------- Dark Theme (Red accents) ---------- */
+# ---------- Dark Theme (Red accents)
+DARK_CSS = """
 :root {
-  --ui-bg: #0b1020;          /* deep navy background */
-  --ui-bg-muted: #151b2e;    /* slightly lighter navy */
-  --ui-card: #101628;        /* card background */
-  --ui-border: #27314a;      /* muted border */
-  --ui-text: #f9fafb;        /* light text */
-  --ui-text-muted: #9ca3af;  /* softer gray text */
-  --ui-primary: #ef4444;     /* RED accents */
-  --ui-primary-contrast: #0b1020; /* text on red */
+  --ui-bg: #0b1020;
+  --ui-bg-muted: #151b2e;
+  --ui-card: #101628;
+  --ui-border: #27314a;
+  --ui-text: #f9fafb;          /* light text */
+  --ui-text-muted: #9ca3af;
+  --ui-primary: #ef4444;       /* RED */
+  --ui-primary-contrast: #0b1020;
 }
-
+"""
 
 # Apply
 _inject_css(BASE_CSS)
 _inject_css(LIGHT_CSS if st.session_state.ui_theme == "Light" else DARK_CSS)
-
-
 
 
 # ------------------------------
@@ -705,6 +707,7 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
 
 
