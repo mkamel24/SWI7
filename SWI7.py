@@ -93,10 +93,10 @@ st.markdown(
 
       /* Buttons */
       .stButton > button[kind="primary"] {
-        background: var(--ui-accent) !important;
-        color: #ffffff !important;
-        border: none;
-        border-radius: 10px;
+        background: #ffffff !important;  /* White background for buttons */
+        color: #000000 !important;       /* Black text color */
+        border: 1px solid var(--ui-border) !important; /* Light border */
+        border-radius: 10px;             /* Rounded corners */
         padding: .6rem 1rem;
         font-weight: 800;
       }
@@ -665,4 +665,5 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
