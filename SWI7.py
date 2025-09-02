@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Streamlit deployment of SWI Wedge Length Ratio – Smart Predictor
-# Black & White theme (UI + plots + SHAP)
+# Full version with pure Black & White theme
 
 import json
 from io import BytesIO
@@ -135,7 +135,7 @@ def shap_summary_plot(shap_values, features, feature_names):
         features=features,
         feature_names=feature_names,
         show=False,
-        color="black"  # force single black color
+        color="black"  # force single color
     )
     plt.setp(ax.collections, color="black")
     return fig
@@ -160,7 +160,22 @@ LABELS = {
     'X7': "Lw/H    (Relative well distance)",
     'X8': "Qw/KH²  (Relative well abstraction rate)",
 }
-# (keep your feature ranges, presets, helpers, caching, etc.)
+
+# ------------------------------
+# Load Model
+# ------------------------------
+@st.cache_resource
+def load_model():
+    return joblib.load(MODEL_PATH)
+
+model = load_model()
+
+# ------------------------------
+# Helper: make prediction
+# ------------------------------
+def make_prediction(inputs):
+    X = np.array([inputs[f] for f in FEATURE_KEYS]).reshape(1, -1)
+    return model.predict(X)[0]
 
 # ------------------------------
 # Header
@@ -175,7 +190,66 @@ tab_predict, tab_explain, tab_batch, tab_hist, tab_article = st.tabs(
     ["Predict", "Explain", "Batch", "History", "Article Info"]
 )
 
-# (⚠️ Keep your Predict / Explain / Batch / History tab logic same as original, but call shap_summary_plot instead of shap.summary_plot)
+# ==============================
+# PREDICT TAB
+# ==============================
+with tab_predict:
+    st.subheader("Input Parameters")
+
+    inputs = {}
+    for key in FEATURE_KEYS:
+        inputs[key] = st.number_input(LABELS[key], min_value=0.0, max_value=5.0, value=1.0, step=0.1)
+
+    if st.button("Predict", type="primary"):
+        pred = make_prediction(inputs)
+        st.markdown(f"<div class='card'><div class='big-number'>{pred:.3f}</div>Predicted Wedge Length Ratio</div>", unsafe_allow_html=True)
+
+    st.download_button("Save Inputs (.json)", data=json.dumps(inputs, indent=2), file_name="inputs.json", mime="application/json")
+
+# ==============================
+# EXPLAIN TAB
+# ==============================
+with tab_explain:
+    st.subheader("Explain Predictions (SHAP)")
+    X_sample = np.random.rand(10, len(FEATURE_KEYS))
+    explainer = shap.Explainer(model)
+    shap_values = explainer(X_sample)
+
+    fig = shap_summary_plot(shap_values, X_sample, FEATURE_KEYS)
+    st.pyplot(fig)
+
+# ==============================
+# BATCH TAB
+# ==============================
+with tab_batch:
+    st.subheader("Batch Predictions")
+    uploaded = st.file_uploader("Upload CSV file with columns X1..X8", type=["csv"])
+    if uploaded:
+        df = pd.read_csv(uploaded)
+        preds = model.predict(df[FEATURE_KEYS])
+        df["Prediction"] = preds
+        st.dataframe(df)
+        st.download_button("Download Results (.csv)", df.to_csv(index=False), file_name="batch_results.csv")
+
+# ==============================
+# HISTORY TAB
+# ==============================
+with tab_hist:
+    st.subheader("Prediction History")
+    if "history" not in st.session_state:
+        st.session_state.history = []
+
+    if st.button("Recall Last Prediction"):
+        if st.session_state.history:
+            st.json(st.session_state.history[-1])
+        else:
+            st.info("No history yet.")
+
+    if st.button("Clear History"):
+        st.session_state.history = []
+
+    if "history" in st.session_state and st.session_state.history:
+        st.dataframe(pd.DataFrame(st.session_state.history))
 
 # ==============================
 # ARTICLE INFO TAB
