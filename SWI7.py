@@ -25,28 +25,37 @@ st.set_page_config(
 )
 
 # ------------------------------
-# Pure Black & White Theme CSS
+# Page / theme config
+# ------------------------------
+st.set_page_config(
+    page_title="SWI Wedge Length Ratio – Smart Predictor",
+    page_icon="🌊",
+    layout="wide",
+)
+
+# ------------------------------
+# Light Theme CSS (Black and White)
 # ------------------------------
 st.markdown(
     """
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Source+Serif+4:wght@500;700&display=swap');
 
-      :root{
-        --ui-bg: #ffffff;          /* white background */
-        --ui-card: #ffffff;        /* white panels/cards */
-        --ui-border: #000000;      /* black borders */
-        --ui-text: #000000;        /* black text */
-        --ui-accent-black: #000000;/* black for buttons/tabs */
-        --ui-accent-white: #ffffff;/* white text for black buttons */
+      :root {
+        --ui-bg: #ffffff;          /* main background */
+        --ui-card: #ffffff;        /* cards */
+        --ui-border: #cccccc;      /* borders */
+        --ui-text: #000000;        /* main text */
+        --ui-text-muted: #666666;  /* muted text */
+        --ui-accent: #000000;      /* accent (black) */
       }
 
       .stApp { background: var(--ui-bg); color: var(--ui-text); }
-      .block-container {padding-top: 1rem; padding-bottom: 2rem;}
+      .block-container { padding-top: 1rem; padding-bottom: 2rem; }
       body, .stApp, p, div, span, label, input, select, textarea {
         font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        font-size: 16px;
         color: var(--ui-text);
+        font-size: 16px;
       }
       h1, h2, h3, h4, h5, h6 {
         font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
@@ -54,64 +63,102 @@ st.markdown(
         font-weight: 700;
       }
 
-      /* Cards */
       .card {
-        padding: 1rem 1.25rem; border-radius: 12px;
-        border: 1px solid var(--ui-border); background: var(--ui-card);
-        color: var(--ui-text);
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        border: 1px solid var(--ui-border);
+        background: var(--ui-card);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
-      .big-number {font-size: 44px; font-weight: 800; color: var(--ui-text); margin: .2rem 0 .8rem;}
+      .big-number {
+        font-size: 44px;
+        font-weight: 800;
+        color: var(--ui-accent);
+        margin: .2rem 0 .8rem;
+      }
 
       /* Inputs */
       input, textarea, select {
-        background: var(--ui-bg) !important; color: var(--ui-text) !important;
-        border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
+        background: var(--ui-card) !important;
+        color: var(--ui-text) !important;
+        border: 1px solid var(--ui-border) !important;
+        border-radius: 10px !important;
       }
       .stNumberInput input {
-        background: var(--ui-bg) !important; color: var(--ui-text) !important;
-        border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
+        background: var(--ui-card) !important;
+        color: var(--ui-text) !important;
+        border: 1px solid var(--ui-border) !important;
+        border-radius: 10px !important;
+      }
+      .stSelectbox div[role="combobox"] {
+        background: var(--ui-card);
+        border: 1px solid var(--ui-border);
+        border-radius: 10px;
+        color: var(--ui-text);
       }
 
       /* Buttons */
-      .stButton > button[kind="primary"]{
-        background: var(--ui-accent-black) !important; color: var(--ui-accent-white) !important;
-        border: none; border-radius: 10px; padding: .6rem 1rem; font-weight: 800;
+      .stButton > button[kind="primary"] {
+        background: var(--ui-accent) !important;
+        color: #ffffff !important;
+        border: none;
+        border-radius: 10px;
+        padding: .6rem 1rem;
+        font-weight: 800;
       }
-      .stButton > button[kind="secondary"]{
-        background: var(--ui-accent-white) !important; color: var(--ui-accent-black) !important;
-        border: 1px solid var(--ui-border); border-radius: 10px; padding: .55rem 1rem; font-weight: 700;
+      .stButton > button[kind="secondary"] {
+        background: #f0f0f0 !important;
+        color: var(--ui-text) !important;
+        border: 1px solid var(--ui-border);
+        border-radius: 10px;
+        padding: .55rem 1rem;
+        font-weight: 700;
       }
 
       /* Tabs */
-      /* Tabs */
-      .stTabs [data-baseweb="tab-list"]{ gap: 8px; }
-      .stTabs [data-baseweb="tab"]{
-         background: var(--ui-bg); 
-         color: var(--ui-text);
-         border: 1px solid var(--ui-border);
-         border-radius: 10px; 
-         padding: .45rem 1rem;   
-         font-weight: 700;
-       }
-       .stTabs [aria-selected="true"]{
-         background: var(--ui-bg) !important;   /* keep white background */
-         color: var(--ui-accent-black) !important; /* black text */
-         border: 2px solid var(--ui-accent-black) !important; /* slightly thicker border */
-         font-weight: 800;  /* bold for active tab */
-       }
-
+      .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+      }
+      .stTabs [data-baseweb="tab"] {
+        background: #ffffff;
+        color: var(--ui-text);
+        border: 1px solid var(--ui-border);
+        border-radius: 10px;
+        padding: .45rem 1rem;
+        font-weight: 700;
+      }
+      .stTabs [aria-selected="true"] {
+        background: var(--ui-accent) !important;
+        color: #ffffff !important;
+        border-color: var(--ui-accent) !important;
+      }
 
       /* Tables */
-      .stDataFrame { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem; }
-      [data-testid="stDataFrame"] thead th { background: var(--ui-accent-black) !important; color: var(--ui-accent-white); font-weight: 800; }
+      .stDataFrame {
+        background: var(--ui-card);
+        border: 1px solid var(--ui-border);
+        border-radius: 12px;
+        padding: .25rem;
+      }
+      [data-testid="stDataFrame"] thead th {
+        background: #f0f0f0 !important;
+        color: var(--ui-text);
+        font-weight: 800;
+      }
 
       /* Uploader */
       [data-testid="stFileUploader"] section {
-        border: 1px dashed var(--ui-border); background: var(--ui-bg);
-        border-radius: 12px; padding: .8rem; color: var(--ui-text);
+        border: 1px dashed var(--ui-border);
+        background: #f9f9f9;
+        border-radius: 12px;
+        padding: .8rem;
+        color: var(--ui-text);
       }
 
-      .muted {color: var(--ui-text); font-size: 0.95rem; opacity:0.7;}
+      .muted {
+        color: var(--ui-text-muted);
+        font-size: 0.95rem;
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -304,4 +351,5 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
 
