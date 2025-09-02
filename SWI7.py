@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
 # Streamlit deployment of SWI Wedge Length Ratio – Smart Predictor
-# Layout:
-#   Left  = Inputs + large prediction readout
-#   Right = Reference sketch (auto-fit, with upload fallback)
-#   Bottom = Predict, Clear, Recall, Save Inputs (JSON), Load Inputs
-# Tabs:
-#   Predict, Explain (SHAP), Batch, History, Article Info (Scientific Reports 15)
-# Deterministic CPU predictions; cached model; no unhashable-arg caching.
+# Black & White theme (UI + plots + SHAP)
 
 import json
 from io import BytesIO
@@ -31,7 +25,7 @@ st.set_page_config(
 )
 
 # ------------------------------
-# Light Theme CSS (dark cards with white text + accents)
+# Pure Black & White Theme CSS
 # ------------------------------
 st.markdown(
     """
@@ -39,26 +33,24 @@ st.markdown(
       @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Source+Serif+4:wght@500;700&display=swap');
 
       :root{
-        --ui-bg: #f5f7fa;          /* light background */
-        --ui-card: #1e293b;        /* dark panels/cards */
-        --ui-border: #3b475a;      /* borders */
-        --ui-text: #ffffff;        /* white text for dark panels */
-        --ui-accent-blue: #3b82f6; /* blue */
-        --ui-accent-green: #10b981;/* green */
-        --ui-accent-red: #ef4444;  /* red */
-        --ui-accent-black: #0f172a;/* deep black */
+        --ui-bg: #ffffff;          /* white background */
+        --ui-card: #ffffff;        /* white panels/cards */
+        --ui-border: #000000;      /* black borders */
+        --ui-text: #000000;        /* black text */
+        --ui-accent-black: #000000;/* black for buttons/tabs */
+        --ui-accent-white: #ffffff;/* white text for black buttons */
       }
 
-      .stApp { background: var(--ui-bg); color: var(--ui-accent-black); }
+      .stApp { background: var(--ui-bg); color: var(--ui-text); }
       .block-container {padding-top: 1rem; padding-bottom: 2rem;}
       body, .stApp, p, div, span, label, input, select, textarea {
         font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         font-size: 16px;
-        color: var(--ui-accent-black);
+        color: var(--ui-text);
       }
       h1, h2, h3, h4, h5, h6 {
         font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
-        color: var(--ui-accent-black);
+        color: var(--ui-text);
         font-weight: 700;
       }
 
@@ -66,49 +58,48 @@ st.markdown(
       .card {
         padding: 1rem 1.25rem; border-radius: 12px;
         border: 1px solid var(--ui-border); background: var(--ui-card);
-        box-shadow: 0 2px 8px rgba(0,0,0,.3);
         color: var(--ui-text);
       }
-      .big-number {font-size: 44px; font-weight: 800; color: var(--ui-accent-blue); margin: .2rem 0 .8rem;}
+      .big-number {font-size: 44px; font-weight: 800; color: var(--ui-text); margin: .2rem 0 .8rem;}
 
       /* Inputs */
       input, textarea, select {
-        background: var(--ui-card) !important; color: var(--ui-text) !important;
+        background: var(--ui-bg) !important; color: var(--ui-text) !important;
         border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
       }
       .stNumberInput input {
-        background: var(--ui-card) !important; color: var(--ui-text) !important;
+        background: var(--ui-bg) !important; color: var(--ui-text) !important;
         border: 1px solid var(--ui-border) !important; border-radius: 10px !important;
       }
 
       /* Buttons */
       .stButton > button[kind="primary"]{
-        background: var(--ui-accent-blue) !important; color: #ffffff !important;
+        background: var(--ui-accent-black) !important; color: var(--ui-accent-white) !important;
         border: none; border-radius: 10px; padding: .6rem 1rem; font-weight: 800;
       }
       .stButton > button[kind="secondary"]{
-        background: var(--ui-card) !important; color: var(--ui-text) !important;
+        background: var(--ui-accent-white) !important; color: var(--ui-accent-black) !important;
         border: 1px solid var(--ui-border); border-radius: 10px; padding: .55rem 1rem; font-weight: 700;
       }
 
       /* Tabs */
       .stTabs [data-baseweb="tab-list"]{ gap: 8px; }
       .stTabs [data-baseweb="tab"]{
-        background: var(--ui-card); color: var(--ui-text);
+        background: var(--ui-bg); color: var(--ui-text);
         border: 1px solid var(--ui-border);
         border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
       }
       .stTabs [aria-selected="true"]{
-        background: var(--ui-accent-green) !important; color: #ffffff !important; border-color: var(--ui-accent-green) !important;
+        background: var(--ui-accent-black) !important; color: var(--ui-accent-white) !important; border-color: var(--ui-accent-black) !important;
       }
 
       /* Tables */
-      .stDataFrame { background: var(--ui-card); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem; }
-      [data-testid="stDataFrame"] thead th { background: var(--ui-accent-black) !important; color: var(--ui-text); font-weight: 800; }
+      .stDataFrame { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem; }
+      [data-testid="stDataFrame"] thead th { background: var(--ui-accent-black) !important; color: var(--ui-accent-white); font-weight: 800; }
 
       /* Uploader */
       [data-testid="stFileUploader"] section {
-        border: 1px dashed var(--ui-border); background: var(--ui-card);
+        border: 1px dashed var(--ui-border); background: var(--ui-bg);
         border-radius: 12px; padding: .8rem; color: var(--ui-text);
       }
 
@@ -118,9 +109,39 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# ------------------------------
+# Force matplotlib to black & white only
+# ------------------------------
+plt.rcParams.update({
+    "text.color": "black",
+    "axes.labelcolor": "black",
+    "xtick.color": "black",
+    "ytick.color": "black",
+    "axes.edgecolor": "black",
+    "axes.facecolor": "white",
+    "figure.facecolor": "white",
+    "lines.color": "black",
+    "patch.edgecolor": "black",
+    "patch.facecolor": "white",
+})
 
 # ------------------------------
-# Config / constants (unchanged)
+# SHAP plots override to black & white
+# ------------------------------
+def shap_summary_plot(shap_values, features, feature_names):
+    fig, ax = plt.subplots()
+    shap.summary_plot(
+        shap_values,
+        features=features,
+        feature_names=feature_names,
+        show=False,
+        color="black"  # force single black color
+    )
+    plt.setp(ax.collections, color="black")
+    return fig
+
+# ------------------------------
+# Config / constants
 # ------------------------------
 MODEL_PATH = "models/XGB.joblib"
 IMAGE_CANDIDATES = [
@@ -139,11 +160,10 @@ LABELS = {
     'X7': "Lw/H    (Relative well distance)",
     'X8': "Qw/KH²  (Relative well abstraction rate)",
 }
-# ... keep the rest of ranges, presets, helpers, caching, etc. as in your original code ...
-
+# (keep your feature ranges, presets, helpers, caching, etc.)
 
 # ------------------------------
-# Header (updated title)
+# Header
 # ------------------------------
 st.title("Assessing the Impact of Groundwater Abstraction and Concrete Dam Fractures on Saltwater Intrusion Using Numerical Modelling and Interpretable Machine Learning")
 st.caption("For users, technicians, water resources engineers, and hydrogeologists – quick, reliable, and explainable.")
@@ -155,10 +175,10 @@ tab_predict, tab_explain, tab_batch, tab_hist, tab_article = st.tabs(
     ["Predict", "Explain", "Batch", "History", "Article Info"]
 )
 
-# (⚠️ Keep the rest of your Predict / Explain / Batch / History tabs code exactly as before)
+# (⚠️ Keep your Predict / Explain / Batch / History tab logic same as original, but call shap_summary_plot instead of shap.summary_plot)
 
 # ==============================
-# ARTICLE INFO TAB (updated details)
+# ARTICLE INFO TAB
 # ==============================
 with tab_article:
     st.markdown("### Article & Authors")
