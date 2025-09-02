@@ -83,15 +83,23 @@ st.markdown(
       }
 
       /* Tabs */
+      /* Tabs */
       .stTabs [data-baseweb="tab-list"]{ gap: 8px; }
       .stTabs [data-baseweb="tab"]{
-        background: var(--ui-bg); color: var(--ui-text);
-        border: 1px solid var(--ui-border);
-        border-radius: 10px; padding: .45rem 1rem; font-weight: 700;
-      }
-      .stTabs [aria-selected="true"]{
-        background: var(--ui-accent-black) !important; color: var(--ui-accent-white) !important; border-color: var(--ui-accent-black) !important;
-      }
+         background: var(--ui-bg); 
+         color: var(--ui-text);
+         border: 1px solid var(--ui-border);
+         border-radius: 10px; 
+         padding: .45rem 1rem;   
+         font-weight: 700;
+       }
+       .stTabs [aria-selected="true"]{
+         background: var(--ui-bg) !important;   /* keep white background */
+         color: var(--ui-accent-black) !important; /* black text */
+         border: 2px solid var(--ui-accent-black) !important; /* slightly thicker border */
+         font-weight: 800;  /* bold for active tab */
+       }
+
 
       /* Tables */
       .stDataFrame { background: var(--ui-bg); border: 1px solid var(--ui-border); border-radius: 12px; padding: .25rem; }
@@ -296,3 +304,4 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
