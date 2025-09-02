@@ -30,9 +30,6 @@ st.set_page_config(
     layout="wide",
 )
 
-# ------------------------------
-# Light Theme CSS (Black and White)
-# ------------------------------
 st.markdown(
     """
     <style>
@@ -125,8 +122,8 @@ st.markdown(
         font-weight: 700;
       }
       .stTabs [aria-selected="true"] {
-        background: var(--ui-accent) !important;
-        color: #ffffff !important;
+        background: #ffffff !important;
+        color: var(--ui-accent) !important;
         border-color: var(--ui-accent) !important;
       }
 
@@ -668,3 +665,4 @@ with tab_article:
     )
     st.download_button("Download Citation (.txt)", data=citation.encode("utf-8"),
                        file_name="citation.txt", mime="text/plain")
+
